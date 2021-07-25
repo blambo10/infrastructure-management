@@ -1,0 +1,96 @@
+- name: Get user details from hashi vault
+  hosts: all
+  # become: False
+  gather_facts: False
+  tasks:
+
+  - debug:
+      msg: "{{ hostvars }}"
+
+  - name: Obtain Server Root Credentials
+    uri:
+      url: 'https://{{ VAULT_SERVER_ADDRESS }}:{{ VAULT_SERVER_PORT }}/v1/secret/servers/linux/{{ inventory_hostname }}'
+      # status_code: [200, 202]
+      method: GET
+      validate_certs: false
+      headers:
+        X-Vault-Token: "{{ ansible_password }}"
+        Content-Type: application/json
+    ignore_errors: true
+    delegate_to: localhost
+    register: servers_vault
+
+  #[BL] Complete login to get default root
+  #     then use the default root to login to the server intially if success set p/w in vault then reset on server 
+  - name: Get Default root user from vault
+    uri:
+      url: 'https://{{ VAULT_SERVER_ADDRESS }}:{{ VAULT_SERVER_PORT }}/v1/secret/{{ HASHI_PATH }}'
+      method: GET
+      return_content: false
+      validate_certs: false
+      headers:
+        X-Vault-Token: "{{ ansible_password }}"
+        Content-Type: application/json
+    delegate_to: localhost
+    when: servers_vault.status == 404
+    register: default_vault
+
+  - name: configure credentials 
+    set_fact:
+      hashi_token: "{{ ansible_password }}"
+      ansible_user: "{{ servers_vault.json.data.username }}"
+      ansible_ssh_user: "{{ servers_vault.json.data.username }}"
+      ansible_password: "{{ servers_vault.json.data.password }}"      
+      ansible_ssh_password: "{{ servers_vault.json.data.password }}"
+    when: >
+      servers_vault.status is defined and 
+      servers_vault.status == 200
+
+  - name: configure credentials
+    set_fact:
+      hashi_token: "{{ ansible_password }}"
+      ansible_user: "{{ default_vault.json.data.username }}"
+      ansible_ssh_user: "{{ default_vault.json.data.username }}"
+      ansible_password: "{{ default_vault.json.data.password }}"      
+      ansible_ssh_password: "{{ default_vault.json.data.password }}"
+    when: >
+      default_vault.status is defined and 
+      default_vault.status == 200
+
+
+  - name: set new password
+    set_fact:
+      new_password: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+- name: ssh user management
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: update root password
+    user:
+      name: root
+      update_password: always
+      password: "{{ new_password | password_hash('sha512') }}"
+    no_log: false
+
+  - name: Login to a form based webpage, then use the returned cookie to access the app in later tasks
+    uri:
+      url: 'https://{{ VAULT_SERVER_ADDRESS }}:{{ VAULT_SERVER_PORT }}/v1/secret/servers/linux/{{ inventory_hostname }}'
+      method: POST
+      validate_certs: false
+      headers:
+        X-Vault-Token: "{{ hashi_token }}"      
+      body_format: json
+      body:
+        username: root
+        password: "{{ new_password }}"
+      status_code: 204
+    delegate_to: localhost
+    register: update_password
+
+
+  # - name: Testing
+  #   shell: sshpass -p {{ ansible_password }} ssh {{ ansible_user }}@{{ inventory_hostname }} "echo success"
+  #   register: ssh_test
+  #   delegate_to: localhost
+  #   failed_when: "'No route to host' in ssh_test.stderr"
