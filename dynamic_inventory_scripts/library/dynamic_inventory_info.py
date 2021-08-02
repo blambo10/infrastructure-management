@@ -119,6 +119,7 @@ class DynamicInventory(object):
 
 
 def main():
+    argument_spec = {}
 
     argument_spec.update(dict(
         scan_network=dict(type='str', required=True),
