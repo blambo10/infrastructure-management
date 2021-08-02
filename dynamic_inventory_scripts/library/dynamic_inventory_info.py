@@ -45,7 +45,7 @@ try:
     import scapy.all as scapy
     HAS_SCAPY = True
 except ImportError:
-    HAS_DEPS = False
+    HAS_SCAPY = False
 
 try:
     import argparse
