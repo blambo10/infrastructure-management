@@ -59,8 +59,8 @@ from ansible.module_utils.basic import AnsibleModule
 class DynamicInventory(object):
     def __init__(self, module):
         self.module = module
-        self.scan_network = module.params['cluster_name']
-        self.scan_port = module.params['datacenter_name']
+        self.scan_network = module.params['scan_network']
+        self.scan_port = module.params['scan_port']
         # self.enable_drs = module.params['enable_drs']
         # self.enable_ha = module.params['enable_ha']
         # self.enable_vsan = module.params['enable_vsan']
