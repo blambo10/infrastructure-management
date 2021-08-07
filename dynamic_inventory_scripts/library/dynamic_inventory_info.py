@@ -65,7 +65,7 @@ class DynamicInventory(object):
         # self.enable_ha = module.params['enable_ha']
         # self.enable_vsan = module.params['enable_vsan']
         # self.desired_state = module.params['state']
-        self.content = self.host_discovery(module)
+        self.content = self.host_discovery()
 
     def host_discovery(self):
         arp_req_frame = scapy.ARP(pdst = self.scan_network)
