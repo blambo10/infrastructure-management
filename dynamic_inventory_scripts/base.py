@@ -17,6 +17,8 @@ if not inventory:
     #write logic
     pass
 
+print(inventory)
+
 if inventory:
     
     inventory_id = inventory[0].get('id')
@@ -33,8 +35,10 @@ if inventory:
         if group.get('other') is 'other':
             other_group_id = 'id'
 
+        print(linux_group_id)
 
-print(linux_group_id)
+
+
 # print(json.dumps(group.get('name'), indent=4))
 
 # net_util = Network('192.168.1.0', '24')
