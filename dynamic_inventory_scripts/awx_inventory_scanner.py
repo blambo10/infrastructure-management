@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 
 import scapy.all as scapy
 import json
 import argparse
+import requests
+
+from requests.auth import HTTPBasicAuth
 
 SCAN_NETWORK="192.168.1.0/24"
 PORT = 22
@@ -29,6 +30,7 @@ def host_discovery(ip):
     answered_list = scapy.srp(broadcast_ether_arp_req_frame, timeout = 1, verbose = False)[0]
     ansible_groups = {}
     discovered_hosts = []
+    other_hosts = []
 
     #[BL] Iterate found devices on network
     for i in range(0,len(answered_list)):
@@ -48,6 +50,8 @@ def host_discovery(ip):
         if ssh_status:
 
             discovered_hosts.append(answered_list[i][1].psrc)
+        else:
+            other_hosts.append(answered_list[i][1].psrc)
 
         # client_dict = {
         #     "ip" : answered_list[i][1].psrc,
@@ -62,6 +66,12 @@ def host_discovery(ip):
                 "var1": True
             },
             "children":[]
+        },
+        "other":{
+            "hosts": other_hosts,
+            "vars": {
+                "var1": True
+            }
         }
     })
 
@@ -81,6 +91,9 @@ if __name__ == '__main__':
 
         print(host_vars)
 
+    
+    # print(json.dumps(response.json()))
+    # exit()
     #if arguments.list:
     discovered_hosts = host_discovery(SCAN_NETWORK)
-    show_hosts(json.dumps(discovered_hosts))
+    show_hosts(json.dumps(discovered_hosts, indent=4))
