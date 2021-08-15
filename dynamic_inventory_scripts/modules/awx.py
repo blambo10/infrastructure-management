@@ -10,8 +10,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 #Move this to be moved to arguments in the constructor
-awx_usernaame = os.environ('AWX_USERNAME')
-awx_password = os.environ('AWX_PASSWORD')
+awx_usernaame = os.environ.get('AWX_USERNAME')
+awx_password = os.environ.get('AWX_PASSWORD')
 
 #This needs to be put in its own class ALL needs to be put in a commons library for python
 def call_http(url, port=None, uri=None, tls=False):
@@ -38,6 +38,15 @@ class AnsibleAwx:
         self._awx_address = awx_address
         self._awx_port = awx_port
 
+        self._awx_base_payload = {
+            "name": "",
+            "description": "",
+            "organization": 1,
+            "kind": "",
+            "host_filter": None,
+            "variables": ""
+        }
+
     def get_inventory_groups(self, name=None, inventory=None):
         uri = '/api/v2/groups/'
         
@@ -47,7 +56,7 @@ class AnsibleAwx:
         if inventory:
             delimiter = '?'
            
-            if delimiter in url:
+            if delimiter in uri:
                 delimiter = '&'
 
             uri = '{}{}inventories={}'.format(uri, delimiter, name)
@@ -65,5 +74,5 @@ class AnsibleAwx:
         return data.get('results')
         # print(data)
     
-    def create_inventory_group(self):
-        pass
+    def create_inventory_group(self, name):
+        
