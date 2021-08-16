@@ -5,6 +5,7 @@ import json
 from modules.awx import AnsibleAwx
 from modules.network import Network
 
+inventory_name = 'thelabshack_core_infra_mgmt'
 inventory_id = None
 linux_group_id = None
 windows_group_id = None
@@ -14,10 +15,14 @@ awx_util = AnsibleAwx('awx.thelabshack.com', 8080)
 inventory = awx_util.get_inventories(name='thelabshack_core_infra_mgmt')
 
 if not inventory:
-    #write logic
+    inventory_data = awx_util.create_inventory(name=inventory_name)
+
+    inventory_id = inventory_data.get('id')
+
+    awx_util.create_inventory_group(name='linux', inventory_id=inventory_id)
     pass
 
-print(inventory)
+# print(inventory)
 
 if inventory:
     
@@ -35,7 +40,7 @@ if inventory:
         if group.get('other') is 'other':
             other_group_id = 'id'
 
-        print(linux_group_id)
+        # print(linux_group_id)
 
 
 

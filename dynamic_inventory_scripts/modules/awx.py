@@ -14,7 +14,8 @@ awx_usernaame = os.environ.get('AWX_USERNAME')
 awx_password = os.environ.get('AWX_PASSWORD')
 
 #This needs to be put in its own class ALL needs to be put in a commons library for python
-def call_http(url, port=None, uri=None, tls=False):
+def call_http(url, port=None, uri=None, method='get', payload=None, tls=False):
+    headers = {'Content-type': 'application/json'}
     req_url = 'http://{}'.format(url)
 
     if tls:
@@ -26,7 +27,16 @@ def call_http(url, port=None, uri=None, tls=False):
     if uri:
         req_url = '{}{}'.format(req_url, uri)
     
-    response = requests.get(req_url, auth=HTTPBasicAuth(awx_usernaame, awx_password))
+    if method is 'get':
+        response = requests.get(req_url, auth=HTTPBasicAuth(awx_usernaame, awx_password))
+    
+    if method is 'post':
+        response = requests.post(req_url, data=payload, headers=headers, auth=HTTPBasicAuth(awx_usernaame, awx_password))
+    
+    # print()
+    # if not response.status_code <= 200 <= 299:
+    #     print('an error occured talking to remote http service') 
+        # raise('an error occured talking to remote http service')    
     response_data = response.json()
 
     return response_data
@@ -47,6 +57,7 @@ class AnsibleAwx:
             "variables": ""
         }
 
+
     def get_inventory_groups(self, name=None, inventory=None):
         uri = '/api/v2/groups/'
         
@@ -62,6 +73,7 @@ class AnsibleAwx:
             uri = '{}{}inventories={}'.format(uri, delimiter, name)
 
         data = call_http(self._awx_address, port=self._awx_port, uri='/api/v2/groups/')
+
         return data.get('results')
     
     def get_inventories(self, name=None):
@@ -74,5 +86,28 @@ class AnsibleAwx:
         return data.get('results')
         # print(data)
     
-    def create_inventory_group(self, name):
+    def create_inventory(self, name):
+        uri = '/api/v2/inventories/'
+
+        new_inventory = self._awx_base_payload
+
+        new_inventory.update({'name': name})
+
+        data = call_http(self._awx_address, port=self._awx_port, uri=uri, method='post', payload=json.dumps(new_inventory))
+        return data
+
+    def create_inventory_group(self, name, inventory_id):
+        uri = '/api/v2/groups/'
         
+        payload = {
+            "name": name,
+            "description": "",
+            "inventory": inventory_id,
+            "variables": ""
+        }
+
+        data = call_http(self._awx_address, port=self._awx_port, uri=uri, method='post', payload=json.dumps(payload))
+        return data
+
+    def update_inventory(self, name):
+        pass
