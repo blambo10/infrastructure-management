@@ -106,7 +106,11 @@ class AnsibleAwx:
             "variables": ""
         }
 
-        data = call_http(self._awx_address, port=self._awx_port, uri=uri, method='post', payload=json.dumps(payload))
+        data = call_http(self._awx_address, 
+                        port=self._awx_port, 
+                        uri=uri, method='post', 
+                        payload=json.dumps(payload)
+                        )
         return data
 
     def update_inventory(self, name):
