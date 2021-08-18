@@ -38,6 +38,8 @@ def call_http(url, port=None, uri=None, method='get', payload=None, tls=False):
     #     print('an error occured talking to remote http service') 
         # raise('an error occured talking to remote http service')    
     response_data = response.json()
+    print(uri)
+    print(response_data)
 
     return response_data
 
@@ -112,6 +114,26 @@ class AnsibleAwx:
                         payload=json.dumps(payload)
                         )
         return data
+
+    def create_host_inventory_in_group(self, name, group_id):
+        uri = '/api/v2/groups/{}/hosts/'.format(group_id)
+        
+        payload = {
+            "name": name,
+            "description": "",
+            "enabled": True,
+            "variables": ""
+        }
+
+        data = call_http(self._awx_address, 
+                        port=self._awx_port, 
+                        uri=uri, method='post', 
+                        payload=json.dumps(payload)
+                        )
+        return data
+
+
+        # https://{{ ansible_tower_host }}/api/v2/groups/{{ group_id }}/hosts/
 
     def update_inventory(self, name):
         pass

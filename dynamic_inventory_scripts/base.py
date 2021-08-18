@@ -43,20 +43,29 @@ if inventory:
         if group.get('name') is 'windows':
             windows_group_id = 'id'
 
-        if group.get('other') is 'other':
+        if group.get('name') is 'other':
             other_group_id = 'id'
 
     if not linux_group_id:
-        awx_util.create_inventory_group(name='linux', inventory_id=inventory_id)
+        data = awx_util.create_inventory_group(name='linux', inventory_id=inventory_id)
+        # linux_group_id = data.get('id')
 
     if not windows_group_id:
-        awx_util.create_inventory_group(name='windows', inventory_id=inventory_id)
+        windows_group_id = awx_util.create_inventory_group(name='windows', inventory_id=inventory_id)
+        # windows_group_id = data.get('id')
 
     if not other_group_id:
-        awx_util.create_inventory_group(name='other', inventory_id=inventory_id)
-
+        data = awx_util.create_inventory_group(name='other', inventory_id=inventory_id)
+        # other_group_id = data.get('id')
 
 # print(json.dumps(group.get('name'), indent=4))
 
-# net_util = Network('192.168.1.0', '24')
-# print(net_util.get_network_hosts())
+net_util = Network('192.168.1.0', '24')
+
+discovered_hosts = net_util.get_network_hosts()
+
+for discovered_host in discovered_hosts:
+    awx_util.create_host_inventory_in_group()
+
+# https://{{ ansible_tower_host }}/api/v2/groups/{{ group_id }}/hosts/
+
