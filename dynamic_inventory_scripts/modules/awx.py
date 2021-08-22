@@ -38,8 +38,8 @@ def call_http(url, port=None, uri=None, method='get', payload=None, tls=False):
     #     print('an error occured talking to remote http service') 
         # raise('an error occured talking to remote http service')    
     response_data = response.json()
-    print(uri)
-    print(response_data)
+    # print(uri)
+    # print(response_data)
 
     return response_data
 
