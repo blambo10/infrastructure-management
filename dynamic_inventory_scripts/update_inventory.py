@@ -25,14 +25,19 @@ if not inventory:
 
     inventory = awx_util.create_inventory(name=required_inventory_name)
 
-    inventory_id = inventory.get('id')
+    inventory_id = inventory.get('id', None)
+
+    if not inventory_id:
+        raise Exception('an error occured obtaining inventory data from awx')
 
     for group in required_group_ids.keys():
         awx_util.create_inventory_group(name=group, 
                                         inventory_id=inventory_id)
 
 if inventory:
+    print(inventory.keys())
 
+    exit()
     inventory_id = inventory[0].get('id')
 
     retreived_groups = awx_util.get_inventory_groups(inventory=inventory_id)
