@@ -35,9 +35,7 @@ if not inventory:
                                         inventory_id=inventory_id)
 
 if inventory:
-    print(inventory.keys())
-
-    exit()
+    
     inventory_id = inventory[0].get('id')
 
     retreived_groups = awx_util.get_inventory_groups(inventory=inventory_id)
