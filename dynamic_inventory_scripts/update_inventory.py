@@ -22,6 +22,7 @@ awx_util = AnsibleAwx('awx.thelabshack.com', 8080)
 inventory = awx_util.get_inventories(name='thelabshack_core_infra_mgmt')
 
 if not inventory:
+
     inventory = awx_util.create_inventory(name=required_inventory_name)
 
     inventory_id = inventory.get('id')
@@ -31,7 +32,7 @@ if not inventory:
                                         inventory_id=inventory_id)
 
 if inventory:
-    
+
     inventory_id = inventory[0].get('id')
 
     retreived_groups = awx_util.get_inventory_groups(inventory=inventory_id)
