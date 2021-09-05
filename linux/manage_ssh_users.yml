@@ -1,5 +1,5 @@
 - name: Get user details from hashi vault
-  hosts: "{{ HOSTS_TO_INCLUDE }}""
+  hosts: "{{ HOSTS_TO_INCLUDE }}"
   # become: False
   gather_facts: False
   tasks:
