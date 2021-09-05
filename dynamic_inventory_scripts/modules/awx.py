@@ -120,9 +120,9 @@ class AnsibleAwx:
         }
 
         data = call_http(self._awx_address, 
-                        port=self._awx_port,
                         username=self._awx_username, 
-                        password=self._awx_password,                          
+                        password=self._awx_password,            
+                        port=self._awx_port,
                         uri=uri, 
                         method='post', 
                         payload=json.dumps(payload)
@@ -140,8 +140,10 @@ class AnsibleAwx:
         }
 
         data = call_http(self._awx_address, 
-                        port=self._awx_port,                     
-                        uri=uri, method='post', 
+                        username=self._awx_username,
+                        password=self._awx_password,          
+                        port=self._awx_port, 
+                        uri=uri, method='post',
                         payload=json.dumps(payload)
                         )
         return data
