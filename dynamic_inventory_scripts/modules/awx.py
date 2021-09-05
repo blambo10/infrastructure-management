@@ -36,8 +36,11 @@ def call_http(url, username=None, password=None, port=None, uri=None, method='ge
     #     print('an error occured talking to remote http service') 
         # raise('an error occured talking to remote http service')
 
-    response_data = response.json()
-
+    try:
+        response_data = response.json()
+    except: 
+        response_data = response
+        
     return response_data
 
 class AnsibleAwx:
