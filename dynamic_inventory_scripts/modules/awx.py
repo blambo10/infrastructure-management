@@ -9,12 +9,10 @@ import requests
 
 from requests.auth import HTTPBasicAuth
 
-#Move this to be moved to arguments in the constructor
-awx_usernaame = os.environ.get('AWX_USERNAME')
-awx_password = os.environ.get('AWX_PASSWORD')
+
 
 #This needs to be put in its own class ALL needs to be put in a commons library for python
-def call_http(url, port=None, uri=None, method='get', payload=None, tls=False):
+def call_http(url, username=None, password=None, port=None, uri=None, method='get', payload=None, tls=False):
     headers = {'Content-type': 'application/json'}
     req_url = 'http://{}'.format(url)
 
@@ -28,27 +26,28 @@ def call_http(url, port=None, uri=None, method='get', payload=None, tls=False):
         req_url = '{}{}'.format(req_url, uri)
     
     if method is 'get':
-        response = requests.get(req_url, auth=HTTPBasicAuth(awx_usernaame, awx_password))
+        response = requests.get(req_url, auth=HTTPBasicAuth(username, password))
     
     if method is 'post':
-        response = requests.post(req_url, data=payload, headers=headers, auth=HTTPBasicAuth(awx_usernaame, awx_password))
+        response = requests.post(req_url, data=payload, headers=headers, auth=HTTPBasicAuth(username, password))
     
     # print()
     # if not response.status_code <= 200 <= 299:
     #     print('an error occured talking to remote http service') 
-        # raise('an error occured talking to remote http service')    
+        # raise('an error occured talking to remote http service')
+
     response_data = response.json()
-    # print(uri)
-    # print(response_data)
 
     return response_data
 
 class AnsibleAwx:
     #"http://awx.thelabshack.com:8080/api/v2/groups/"
 
-    def __init__(self, awx_address, awx_port):
+    def __init__(self, awx_address, awx_port, awx_username, awx_password):
         self._awx_address = awx_address
         self._awx_port = awx_port
+        self._awx_username = awx_username
+        self._awx_password = awx_password
 
         self._awx_base_payload = {
             "name": "",
@@ -74,7 +73,10 @@ class AnsibleAwx:
 
             uri = '{}{}inventories={}'.format(uri, delimiter, name)
 
-        data = call_http(self._awx_address, port=self._awx_port, uri='/api/v2/groups/')
+        data = call_http(self._awx_address, 
+                        username=self._awx_username, 
+                        password=self._awx_password, 
+                        port=self._awx_port, uri='/api/v2/groups/')
 
         return data.get('results')
     
@@ -84,7 +86,11 @@ class AnsibleAwx:
         if name:
             uri = '{}?name={}'.format(uri, name)
 
-        data = call_http(self._awx_address, port=self._awx_port, uri=uri)
+        data = call_http(self._awx_address,
+                        username=self._awx_username, 
+                        password=self._awx_password, 
+                        port=self._awx_port, 
+                        uri=uri)
         return data.get('results')
         # print(data)
     
@@ -95,7 +101,12 @@ class AnsibleAwx:
 
         new_inventory.update({'name': name})
 
-        data = call_http(self._awx_address, port=self._awx_port, uri=uri, method='post', payload=json.dumps(new_inventory))
+        data = call_http(self._awx_address, 
+                        username=self._awx_username, 
+                        password=self._awx_password, 
+                        port=self._awx_port, 
+                        uri=uri, method='post', 
+                        payload=json.dumps(new_inventory))
         return data
 
     def create_inventory_group(self, name, inventory_id):
@@ -109,8 +120,11 @@ class AnsibleAwx:
         }
 
         data = call_http(self._awx_address, 
-                        port=self._awx_port, 
-                        uri=uri, method='post', 
+                        port=self._awx_port,
+                        username=self._awx_username, 
+                        password=self._awx_password,                          
+                        uri=uri, 
+                        method='post', 
                         payload=json.dumps(payload)
                         )
         return data
@@ -126,14 +140,11 @@ class AnsibleAwx:
         }
 
         data = call_http(self._awx_address, 
-                        port=self._awx_port, 
+                        port=self._awx_port,                     
                         uri=uri, method='post', 
                         payload=json.dumps(payload)
                         )
         return data
-
-
-        # https://{{ ansible_tower_host }}/api/v2/groups/{{ group_id }}/hosts/
 
     def update_inventory(self, name):
         pass

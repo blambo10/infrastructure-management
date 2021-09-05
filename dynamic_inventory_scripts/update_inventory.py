@@ -2,8 +2,16 @@
 # -*- coding:utf-8 -*-
 
 import json
+import os
+from dotenv import load_dotenv
 from modules.awx import AnsibleAwx
 from modules.network import Network
+
+#[BL] Load .env vars as env vars
+load_dotenv()
+
+awx_username = os.environ.get('AWX_USERNAME')
+awx_password = os.environ.get('AWX_PASSWORD')
 
 required_inventory_name = 'thelabshack_core_infra_mgmt'
 
@@ -18,8 +26,8 @@ linux_group_id = None
 windows_group_id = None
 other_group_id = None
 
-awx_util = AnsibleAwx('awx.thelabshack.com', 8080)
-inventory = awx_util.get_inventories(name='thelabshack_core_infra_mgmt')
+awx_util = AnsibleAwx('awx.thelabshack.com', 8080, awx_username, awx_password)
+inventory = awx_util.get_inventories(name=required_inventory_name)
 
 if not inventory:
 

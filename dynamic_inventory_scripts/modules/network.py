@@ -31,17 +31,19 @@ class Network:
             'other': []
         }
 
+        local_host_primary_ip = scapy.get_if_addr(scapy.conf.iface)
+
         #[BL] Scan network for devices using ARP
-        answered_list = scapy.srp(self.broadcast_ether_arp_req_frame, 
+        arp_answered_ip_list = scapy.srp(self.broadcast_ether_arp_req_frame, 
                                 timeout = 1, 
                                 verbose = False)[0]
-   
+
         #[BL] Iterate found devices on network
-        for i in range(0,len(answered_list)):
+        for i in range(0,len(arp_answered_ip_list)):
             ssh_status = False
 
             #[BL] Check device for port status
-            socket_response = scapy.sr1(scapy.IP(dst=answered_list[i][1].psrc)/scapy.TCP(dport=self.fingerprint_ports.get('linux'), flags="S"),verbose=False, timeout=0.2)
+            socket_response = scapy.sr1(scapy.IP(dst=arp_answered_ip_list[i][1].psrc)/scapy.TCP(dport=self.fingerprint_ports.get('linux'), flags="S"),verbose=False, timeout=0.2)
 
             if socket_response:
 
@@ -53,13 +55,13 @@ class Network:
 
             if ssh_status:
 
-                hosts['linux'].append(answered_list[i][1].psrc)
+                hosts['linux'].append(arp_answered_ip_list[i][1].psrc)
+                hosts['linux'].append(local_host_primary_ip)
             else:
-                hosts['other'].append(answered_list[i][1].psrc)
+                hosts['other'].append(arp_answered_ip_list[i][1].psrc)
             
             self.discovered_hosts.update(hosts)
 
     def get_network_hosts(self):
         self._scan_arp()
         return self.discovered_hosts
-
